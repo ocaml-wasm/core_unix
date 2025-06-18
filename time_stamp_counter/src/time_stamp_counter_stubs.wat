@@ -15,11 +15,9 @@
       (func $caml_copy_int64 (param i64) (result (ref eq))))
 
    (type $block (array (mut (ref eq))))
-   (type $string (array (mut i8)))
+   (type $bytes (array (mut i8)))
+   (type $string (struct (field anyref)))
    (type $float (struct (field f64)))
-
-   (data $performance "performance")
-   (data $now "now")
 
    (export "tsc_get" (func $caml_rdtsc))
    (func $caml_rdtsc (export "caml_rdtsc") (param (ref eq)) (result (ref eq))
@@ -32,18 +30,12 @@
                         (call $caml_js_meth_call
                            (call $caml_js_get
                               (call $caml_js_global (ref.i31 (i32.const 0)))
-                              (array.new_data $string $performance
-                                 (i32.const 0) (i32.const 11)))
-                           (array.new_data $string $now
-                              (i32.const 0) (i32.const 3))
+                              (@string "performance"))
+                           (@string "now")
                            (array.new_fixed $block 1
                               (ref.i31 (i32.const 0)))))))))))
 
-   (data $nanosleep_not_implemented "nanosleep is not supported in javascript")
-
    (func (export "tsc_nanosleep") (param (ref eq)) (result (ref eq))
-      (call $caml_failwith
-         (array.new_data $string $nanosleep_not_implemented
-            (i32.const 0) (i32.const 40)))
+      (call $caml_failwith (@string "nanosleep is not supported in javascript"))
       (ref.i31 (i32.const 0)))
 )
