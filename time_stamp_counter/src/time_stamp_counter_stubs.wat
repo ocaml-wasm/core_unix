@@ -1,4 +1,6 @@
 (module
+   (@string_imports "str")
+   (@string_type $string)
    (import "env" "caml_failwith" (func $caml_failwith (param (ref eq))))
    (import "env" "caml_js_global"
       (func $caml_js_global (param (ref eq)) (result (ref eq))))
@@ -15,11 +17,15 @@
       (func $caml_copy_int64 (param i64) (result (ref eq))))
 
    (type $block (array (mut (ref eq))))
-   (type $string (array (mut i8)))
+(@if $use_js_string
+(@then
+   (type $string (struct (field externref))))
+(@else
+   (type $string (array (mut i8)))))
    (type $float (struct (field f64)))
 
-   (data $performance "performance")
-   (data $now "now")
+   (@string $performance "performance")
+   (@string $now "now")
 
    (export "tsc_get" (func $caml_rdtsc))
    (func $caml_rdtsc (export "caml_rdtsc") (param (ref eq)) (result (ref eq))
@@ -32,18 +38,15 @@
                         (call $caml_js_meth_call
                            (call $caml_js_get
                               (call $caml_js_global (ref.i31 (i32.const 0)))
-                              (array.new_data $string $performance
-                                 (i32.const 0) (i32.const 11)))
-                           (array.new_data $string $now
-                              (i32.const 0) (i32.const 3))
+                              (global.get $performance))
+                           (global.get $now)
                            (array.new_fixed $block 1
                               (ref.i31 (i32.const 0)))))))))))
 
-   (data $nanosleep_not_implemented "nanosleep is not supported in javascript")
+   (@string $nanosleep_not_implemented "nanosleep is not supported in javascript")
 
    (func (export "tsc_nanosleep") (param (ref eq)) (result (ref eq))
       (call $caml_failwith
-         (array.new_data $string $nanosleep_not_implemented
-            (i32.const 0) (i32.const 40)))
+         (global.get $nanosleep_not_implemented))
       (ref.i31 (i32.const 0)))
 )
